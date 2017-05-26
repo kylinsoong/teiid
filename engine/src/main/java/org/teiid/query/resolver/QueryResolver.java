@@ -1,23 +1,19 @@
 /*
- * JBoss, Home of Professional Open Source.
- * See the COPYRIGHT.txt file distributed with this work for information
- * regarding copyright ownership.  Some portions may be licensed
- * to Red Hat, Inc. under one or more contributor license agreements.
- * 
- * This library is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
- * 
- * This library is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- * 
- * You should have received a copy of the GNU Lesser General Public
- * License along with this library; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA
- * 02110-1301 USA.
+ * Copyright Red Hat, Inc. and/or its affiliates
+ * and other contributors as indicated by the @author tags and
+ * the COPYRIGHT.txt file distributed with this work.
+ *
+ * Licensed under the Apache License, Version 2.0 (the "License");
+ * you may not use this file except in compliance with the License.
+ * You may obtain a copy of the License at
+ *
+ * http://www.apache.org/licenses/LICENSE-2.0
+ *
+ * Unless required by applicable law or agreed to in writing, software
+ * distributed under the License is distributed on an "AS IS" BASIS,
+ * WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ * See the License for the specific language governing permissions and
+ * limitations under the License.
  */
 
 package org.teiid.query.resolver;
@@ -52,7 +48,13 @@ import org.teiid.query.parser.QueryParser;
 import org.teiid.query.resolver.command.*;
 import org.teiid.query.resolver.util.ResolverUtil;
 import org.teiid.query.resolver.util.ResolverVisitor;
-import org.teiid.query.sql.lang.*;
+import org.teiid.query.sql.lang.Command;
+import org.teiid.query.sql.lang.Criteria;
+import org.teiid.query.sql.lang.GroupContext;
+import org.teiid.query.sql.lang.ProcedureContainer;
+import org.teiid.query.sql.lang.Query;
+import org.teiid.query.sql.lang.SetQuery;
+import org.teiid.query.sql.lang.SubqueryContainer;
 import org.teiid.query.sql.navigator.DeepPostOrderNavigator;
 import org.teiid.query.sql.symbol.AliasSymbol;
 import org.teiid.query.sql.symbol.ElementSymbol;
@@ -80,7 +82,6 @@ public class QueryResolver {
     private static final String BINDING_GROUP = "INPUTS"; //$NON-NLS-1$
 	private static final CommandResolver SIMPLE_QUERY_RESOLVER = new SimpleQueryResolver();
     private static final CommandResolver SET_QUERY_RESOLVER = new SetQueryResolver();
-    private static final CommandResolver XML_QUERY_RESOLVER = new XMLQueryResolver();
     private static final CommandResolver EXEC_RESOLVER = new ExecResolver();
     private static final CommandResolver INSERT_RESOLVER = new InsertResolver();
     private static final CommandResolver UPDATE_RESOLVER = new UpdateResolver();
@@ -301,9 +302,6 @@ public class QueryResolver {
         switch(command.getType()) {
             case Command.TYPE_QUERY:
                 if(command instanceof Query) {
-                    if(isXMLQuery((Query)command, metadata)) {
-                        return XML_QUERY_RESOLVER;
-                    }
                     return SIMPLE_QUERY_RESOLVER;
                 }
                 return SET_QUERY_RESOLVER;
@@ -326,48 +324,6 @@ public class QueryResolver {
         }
     }
 
-    /**
-     * Check to verify if the query would return XML results.
-     * @param query the query to check
-     * @param metadata QueryMetadataInterface the metadata
-     */
-    public static boolean isXMLQuery(Query query, QueryMetadataInterface metadata)
-     throws TeiidComponentException, QueryMetadataException, QueryResolverException {
-
-        if (query.getWith() != null) {
-        	return false;
-        }
-
-        // Check first group
-        From from = query.getFrom();
-        if(from == null){
-            //select with no from
-            return false;
-        }
-                
-        if (from.getClauses().size() != 1) {
-            return false;
-        }
-        
-        FromClause clause = from.getClauses().get(0);
-        
-        if (!(clause instanceof UnaryFromClause)) {
-            return false;
-        }
-        
-        GroupSymbol symbol = ((UnaryFromClause)clause).getGroup();
-        
-        ResolverUtil.resolveGroup(symbol, metadata);
-                
-        if (symbol.isProcedure()) {
-            return false;
-        }
-        
-        Object groupID = ((UnaryFromClause)clause).getGroup().getMetadataID();
-
-        return metadata.isXMLGroup(groupID);
-    }
-    
     /**
      * Resolve just a criteria.  The criteria will be modified so nothing is returned.
      * @param criteria Criteria to resolve

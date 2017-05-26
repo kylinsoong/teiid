@@ -3,13 +3,12 @@
   <parent>
     <artifactId>teiid-parent</artifactId>
     <groupId>org.jboss.teiid</groupId>
-    <version>9.3.0.Beta3-SNAPSHOT</version>
+    <version>10.0.0.Alpha1-SNAPSHOT</version>
   </parent>
   <licenses>
         <license>
-            <name>GNU Lesser General Public License</name>
-            <url>http://www.gnu.org/licenses/lgpl.html</url>
-            <comments>A business-friendly OSS license</comments>
+            <name>Apache License, Version 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0</url>
         </license>
         <license>
             <name>BSD-3-Clause</name>
