@@ -73,6 +73,10 @@ public class CouchbaseMetadataProcessor implements MetadataProcessor<CouchbaseCo
     
     private String sampleKeyspaces = ALL_COLS;
     
+    private String localSchemaFile = null;
+    
+    private List<Table> cacheList;
+    
     private Map<String, List<String>> typeNameMap;
             
     @Override
@@ -188,6 +192,8 @@ public class CouchbaseMetadataProcessor implements MetadataProcessor<CouchbaseCo
             Column column = mf.addColumn(DOCUMENTID, STRING, table);
             column.setUpdatable(true);
             mf.addPrimaryKey("PK0", Arrays.asList(DOCUMENTID), table); //$NON-NLS-1$
+            
+            addToCache(table);
             
             if(!name.equals(keyspace)) {
                 String namedTypePair = buildNamedTypePair(tableNameTypeMap.get(name), name);
@@ -352,9 +358,21 @@ public class CouchbaseMetadataProcessor implements MetadataProcessor<CouchbaseCo
                 idx.setUpdatable(true);
             }
             dimension.increment();
+            
+            addToCache(table);
         } 
      
         return table;
+    }
+
+    private void addToCache(Table table) {
+        
+        if(this.localSchemaFile != null) {
+            if(this.cacheList == null) {
+                this.cacheList = new ArrayList<>();
+            }
+            this.cacheList.add(table);
+        }
     }
 
     private void addColumn(String name, String type, Object columnValue, boolean updatable, String nameInSource, Table table, MetadataFactory mf) {

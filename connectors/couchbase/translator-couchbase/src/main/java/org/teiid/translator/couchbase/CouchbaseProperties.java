@@ -58,5 +58,10 @@ public interface CouchbaseProperties {
     String N1QL_TABLE_ALIAS_PREFIX = "$cb_t"; //$NON-NLS-1$
     
     String EMPTY_STRING = "";//$NON-NLS-1$
+    
+    String NEWLINE = "\n";//$NON-NLS-1$
+    String FOREIGN_TABLE = "FOREIGN TABLE";//$NON-NLS-1$
+    char ID_ESCAPE_CHAR = '\"';
+    String TAB = "\t"; //$NON-NLS-1$
 
 }
